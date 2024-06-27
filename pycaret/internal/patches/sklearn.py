@@ -1,9 +1,15 @@
-from typing import Any
+from typing import Any, Callable
+from unittest.mock import patch
 
-from sklearn.utils import check_random_state
 import numpy as np
+from sklearn.metrics._scorer import _MultimetricScorer
+from sklearn.model_selection._validation import _fit_and_score, _score
+from sklearn.utils import check_random_state
+
+from pycaret.internal.pipeline import pipeline_predict_inverse_only
 
 # Monkey patching sklearn.model_selection._search to avoid overflows on windows.
+
 
 # adapted from https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/_random.pyx
 def _mp_sample_without_replacement(
@@ -101,3 +107,56 @@ def _mp_ParameterGrid_getitem(self, ind):
             return out
 
     raise IndexError("ParameterGrid index out of range")
+
+
+class MultimetricScorerPatched(_MultimetricScorer):
+    # Patch use_cache to supress exception if an estimator
+    # doesn't have the required method (this can happen
+    # with PyCaret as we just default to error score
+    # in that case).
+    def _use_cache(self, estimator):
+        try:
+            return super()._use_cache(estimator)
+        except AttributeError:
+            return True
+
+
+def fit_and_score(*args, **kwargs) -> dict:
+    """Wrapper for sklearn's _fit_and_score function.
+
+    Wrap the function sklearn.model_selection._validation._fit_and_score
+    to, in turn, path sklearn's _score function to accept pipelines that
+    drop samples during transforming, within a joblib parallel context.
+
+    """
+
+    def wrapper(*args, **kwargs) -> dict:
+        with patch(
+            "sklearn.model_selection._validation._MultimetricScorer",
+            MultimetricScorerPatched,
+        ), patch("sklearn.model_selection._validation._score", score(_score)):
+            return _fit_and_score(*args, **kwargs)
+
+    return wrapper(*args, **kwargs)
+
+
+def score(f: Callable) -> Callable:
+    """Patch decorator for sklearn's _score function.
+
+    Monkey patch for sklearn.model_selection._validation._score
+    function to score pipelines that drop samples during transforming.
+
+    """
+
+    def wrapper(*args, **kwargs):
+        args = list(args)  # Convert to list for item assignment
+        if len(args[0]) > 1:  # Has transformers
+            args[1], y_transformed = args[0]._memory_full_transform(
+                args[0], args[1], args[2], with_final=False
+            )
+            args[2] = args[2][args[2].index.isin(y_transformed.index)]
+
+        with pipeline_predict_inverse_only():
+            return f(args[0], *tuple(args[1:]), **kwargs)
+
+    return wrapper

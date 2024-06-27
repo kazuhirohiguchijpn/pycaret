@@ -1,17 +1,14 @@
-## Related Issuse or bug
-  - Info about Issue or bug
+# Related Issue or bug
 
-Fixes: #[issue number that will be closed through this PR]
+Info about Issue or bug
 
-#### Describe the changes you've made
+Closes #[issue number that will be closed through this PR]
+
+# Describe the changes you've made
+
 A clear and concise description of what you have done to successfully close your assigned issue. Any new files? or anything you feel to let us know!
 
-
-
-
-
-
-## Type of change
+# Type of change
 
 Please delete options that are not relevant.
 <!--
@@ -24,14 +21,16 @@ Example how to mark a checkbox :-
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
-## How Has This Been Tested?
+# How Has This Been Tested?
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. 
 
-#### Describe if there is any unusual behaviour of your code(Write `NA` if there isn't)
+# Describe if there is any unusual behaviour of your code(Write `NA` if there isn't)
+
 A clear and concise description of it.
 
-## Checklist:
+# Checklist:
+
 <!--
 Example how to mark a checkbox :-
 - [x] My code follows the code style of this project.
@@ -45,27 +44,8 @@ Example how to mark a checkbox :-
 - [ ] New and existing unit tests pass locally with my changes.
 - [ ] Any dependent changes have been merged and published in downstream modules.
 
-## Screenshots
+# Screenshots
 
  Original           | Updated
  :--------------------: |:--------------------:
  **original screenshot**  | <b>updated screenshot </b> |
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
-
-
-
-
-
-
-
-
-
